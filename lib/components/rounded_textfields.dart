@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 // ignore: non_constant_identifier_names
-Widget RoundedTextfields({label, obscureText = false}) {
+Widget RoundedTextfields(
+    {label, obscureText = false, Function(String) onChanged}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: <Widget>[
@@ -16,6 +17,7 @@ Widget RoundedTextfields({label, obscureText = false}) {
         height: 5,
       ),
       TextField(
+        onChanged: onChanged,
         obscureText: obscureText,
         decoration: kTextFieldDecoration,
       ),

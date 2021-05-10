@@ -1,4 +1,7 @@
+import 'package:booking_time/api/restaurent_service.dart';
 import 'package:booking_time/components/rounded_restaurant.dart';
+import 'package:booking_time/models/restaurent_model.dart';
+import 'package:booking_time/screens/feedbacks_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:booking_time/components/rounded_containers.dart';
 // import 'package:search_widget/search_widget.dart';
@@ -10,6 +13,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  RestaurentServices _restaurentServices = RestaurentServices();
+
+  Future<List<Restaurent>> getRestaurents() async {
+    List<Restaurent> restaurentList =
+        await _restaurentServices.getAllRestaurents();
+    return restaurentList;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,11 +37,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    child: Text(
-                      "Booking Time",
-                      style: TextStyle(
-                        fontSize: 37.0,
-                        fontWeight: FontWeight.bold,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(context, FeedbacksScreen.id);
+                      },
+                      child: Text(
+                        "Booking Time",
+                        style: TextStyle(
+                          fontSize: 37.0,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -69,27 +85,35 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              child: ListView(
-                children: [
-                  RoundedRest(
-                    image:
-                        "https://images.pexels.com/photos/3676531/pexels-photo-3676531.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-                    r_name: "Dominos",
-                    reviews: "323 reviews = S.ofkf",
-                  ),
-                  RoundedRest(
-                    image:
-                        "https://images.pexels.com/photos/3676531/pexels-photo-3676531.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-                    r_name: "Dominos",
-                    reviews: "323 reviews = S.ofkf",
-                  ),
-                  RoundedRest(
-                    image:
-                        "https://images.pexels.com/photos/3676531/pexels-photo-3676531.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-                    r_name: "Dominos",
-                    reviews: "323 reviews = S.ofkf",
-                  ),
-                ],
+              child: FutureBuilder(
+                future: getRestaurents(),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(snapshot.error),
+                    );
+                  }
+                  if (snapshot.hasData) {
+                    List<Restaurent> restList = snapshot.data;
+                    if (restList.isNotEmpty) {
+                      return ListView.builder(
+                        itemCount: restList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          Restaurent rest = restList[index];
+                          return RoundedRest(
+                            image:
+                                "https://images.pexels.com/photos/3676531/pexels-photo-3676531.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+                            rName: rest.rName,
+                            restId: rest.id,
+                          );
+                        },
+                      );
+                    }
+                  }
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
               ),
             ),
           ],

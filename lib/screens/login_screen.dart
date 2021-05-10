@@ -1,4 +1,8 @@
+import 'package:booking_time/api/user_service.dart';
+import 'package:booking_time/components/custom_alert.dart';
+import 'package:booking_time/components/custom_loading.dart';
 import 'package:booking_time/constants.dart';
+import 'package:booking_time/models/user_model.dart';
 import 'package:booking_time/screens/home_screen.dart';
 import 'package:booking_time/screens/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,6 +16,37 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  UserServices _userServices = UserServices();
+
+  String _email;
+  String _password;
+
+  Future<void> loginUser() async {
+    CustomLoading.showLoadingDialog(context: context, message: "Loging...");
+    try {
+      User currentUser =
+          await _userServices.loginWithEmailAndPw(_email, _password);
+      if (currentUser != null) {
+        print(currentUser.nic);
+        CustomLoading.closeLoading(context: context);
+        Navigator.pushNamed(context, HomeScreen.id);
+      } else {
+        CustomLoading.closeLoading(context: context);
+        CustomAlert.alertDialogBuilder(
+            context: context,
+            title: "Error",
+            message: "wrong email or password",
+            action: "Ok");
+        print("user is null");
+        print("somthing went wrong!!!");
+      }
+    } catch (e) {
+      CustomLoading.closeLoading(context: context);
+      CustomAlert.alertDialogBuilder(
+          context: context, title: "Error", message: "$e", action: "Ok");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
+                      onChanged: (value) => _email = value,
                       // onSaved: (input) => requestModel.email = input,
                       decoration:
                           kTextFieldDecoration.copyWith(labelText: "Email"),
@@ -74,6 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     TextFormField(
                       keyboardType: TextInputType.text,
+                      onChanged: (value) => _password = value,
                       // onSaved: (input) => requestModel.password = input,
                       decoration:
                           kTextFieldDecoration.copyWith(labelText: "Password"),
@@ -87,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       buttonColor: Colors.purpleAccent,
                       textColor: Colors.black,
                       onPressed: () {
+                        loginUser();
                         // print(requestModel.toJson());
                       },
                     ),

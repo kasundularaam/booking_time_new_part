@@ -1,12 +1,28 @@
+import 'package:booking_time/api/feedback_service.dart';
 import 'package:flutter/material.dart';
 
-class RoundedRest extends StatelessWidget {
-  const RoundedRest({Key key, this.image, this.r_name, this.reviews})
+class RoundedRest extends StatefulWidget {
+  const RoundedRest({Key key, this.image, this.rName, this.restId})
       : super(key: key);
 
+  final int restId;
   final String image;
-  final String r_name;
-  final String reviews;
+  final String rName;
+
+  @override
+  _RoundedRestState createState() => _RoundedRestState();
+}
+
+class _RoundedRestState extends State<RoundedRest> {
+  FeedbackServices _feedbackServices = FeedbackServices();
+  int _feedbackCount = 0;
+
+  @override
+  void initState() async {
+    super.initState();
+    _feedbackCount =
+        await _feedbackServices.getFeedbackCountForRest(widget.restId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +35,7 @@ class RoundedRest extends StatelessWidget {
               height: 200,
               decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage(image),
+                    image: NetworkImage(widget.image),
                     fit: BoxFit.cover,
                   ),
                   borderRadius: BorderRadius.only(
@@ -36,7 +52,7 @@ class RoundedRest extends StatelessWidget {
                     children: [
                       Container(
                         child: Text(
-                          r_name,
+                          widget.rName,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
@@ -44,7 +60,7 @@ class RoundedRest extends StatelessWidget {
                       ),
                       Container(
                         child: Text(
-                          reviews,
+                          "$_feedbackCount reviews = S.ofkf",
                           style: TextStyle(color: Colors.grey),
                         ),
                       ),
