@@ -31,15 +31,15 @@ class Restaurent {
   int contact;
 
   factory Restaurent.fromJson(Map<String, dynamic> json) => Restaurent(
-        id: json["id"],
-        rName: json["r_Name"],
-        address: json["address"],
-        province: json["province"],
-        email: json["email"],
-        password: json["password"],
-        registeredNumber: json["registered_Number"],
-        district: json["district"],
-        approve: json["approve"],
+        id: json["Id"],
+        rName: json["R_Name"],
+        address: json["Address"],
+        province: json["Province"],
+        email: json["Email"],
+        password: json["Password"],
+        registeredNumber: json["Registered_Number"],
+        district: json["District"],
+        approve: json["Approve"],
         contact: json["contact"],
       );
 

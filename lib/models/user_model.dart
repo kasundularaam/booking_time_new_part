@@ -24,13 +24,13 @@ class User {
   String district;
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json["id"],
-        name: json["name"],
-        password: json["password"],
-        email: json["email"],
-        nic: json["nic"],
-        contact: json["contact"],
-        district: json["district"],
+        id: json["Id"],
+        name: json["Name"],
+        password: json["Password"],
+        email: json["Email"],
+        nic: json["Nic"],
+        contact: json["Contact"],
+        district: json["District"],
       );
 
   Map<String, dynamic> toJson() => {

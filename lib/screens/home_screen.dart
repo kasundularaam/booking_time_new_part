@@ -14,11 +14,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   RestaurentServices _restaurentServices = RestaurentServices();
+  bool _isSearch = false;
+  String _searchText;
 
-  Future<List<Restaurent>> getRestaurents() async {
-    List<Restaurent> restaurentList =
-        await _restaurentServices.getAllRestaurents();
-    return restaurentList;
+  Future<List<Restaurent>> getRestaurents(bool isSearch) async {
+    if (isSearch && _searchText.isNotEmpty) {
+      List<Restaurent> filteredList = await _restaurentServices
+          .searchRestByName(_searchText.trim().toLowerCase());
+      return filteredList;
+    } else {
+      List<Restaurent> restaurentList =
+          await _restaurentServices.getAllRestaurents();
+      return restaurentList;
+    }
   }
 
   @override
@@ -64,6 +72,16 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: EdgeInsets.only(left: 25.0, right: 25.0),
               child: TextFormField(
+                onChanged: (value) {
+                  setState(() {
+                    _searchText = value;
+                    if (value.isNotEmpty) {
+                      _isSearch = true;
+                    } else {
+                      _isSearch = false;
+                    }
+                  });
+                },
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search),
                   hintText: "Search Restaurant",
@@ -86,11 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Expanded(
               child: FutureBuilder(
-                future: getRestaurents(),
+                future: getRestaurents(_isSearch),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.hasError) {
                     return Center(
-                      child: Text(snapshot.error),
+                      child: Text(snapshot.error.toString()),
                     );
                   }
                   if (snapshot.hasData) {

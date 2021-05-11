@@ -19,4 +19,29 @@ class RestaurentServices {
       throw Exception('${response.statusCode}');
     }
   }
+
+  Future<List<Restaurent>> searchRestByName(String rName) async {
+    List<Restaurent> allRestList = await getAllRestaurents();
+    List<Restaurent> filteredList = [];
+
+    allRestList.forEach((rest) {
+      String restName = rest.rName.toString().trim().toLowerCase();
+      if (restName.contains(rName)) {
+        filteredList.clear();
+        filteredList.add(rest);
+      }
+    });
+    return filteredList;
+  }
+
+  Future<Restaurent> getRestaurentById(int rId) async {
+    String url = "http://www.snp-solutions.xyz:3001/restaurent/$rId";
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      List<Restaurent> restList = parseRestaurent(response.body);
+      return restList[0];
+    } else {
+      throw Exception('${response.statusCode}');
+    }
+  }
 }

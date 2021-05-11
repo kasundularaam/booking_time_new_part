@@ -1,3 +1,8 @@
+import 'package:booking_time/api/restaurent_service.dart';
+import 'package:booking_time/components/rounded_buttons.dart';
+import 'package:booking_time/models/restaurent_model.dart';
+import 'package:booking_time/screens/feedbacks_screen.dart';
+import 'package:booking_time/screens/reservation_screen.dart';
 import 'package:flutter/material.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -9,8 +14,16 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
+  int _rId;
+  void getArguments(BuildContext context) {
+    final arguments = ModalRoute.of(context).settings.arguments as Map;
+    if (arguments != null) _rId = arguments['rId'];
+  }
+
   @override
   Widget build(BuildContext context) {
+    getArguments(context);
+
     ///  var onPressed2 = null;
     const rowSpacer = TableRow(children: [
       SizedBox(
@@ -47,8 +60,8 @@ class _BookingScreenState extends State<BookingScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-            buildBookingDetail(),
-            buildBookingEndStrip(),
+            buildBookingDetail(_rId),
+            buildBookingEndStrip(context),
             SizedBox(
               height: 10.0,
             ),
@@ -210,7 +223,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
               ),
             ),
-            buildBookingButton(),
+            buildBookingButton(context),
           ],
         ),
       ),
@@ -219,12 +232,13 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 }
 
-Widget buildBookingButton() {
+Widget buildBookingButton(BuildContext context) {
   return Container(
     padding: EdgeInsets.symmetric(vertical: 8, horizontal: 44),
     width: double.infinity,
     child: RaisedButton(
       onPressed: () {
+        Navigator.pushNamed(context, ReservationScreen.id);
         //TODO
       },
       color: Colors.orange[900],
@@ -240,7 +254,7 @@ Widget buildBookingButton() {
   );
 }
 
-Widget buildBookingEndStrip() {
+Widget buildBookingEndStrip(BuildContext context) {
   return Padding(
     padding: EdgeInsets.symmetric(horizontal: 16),
     child: Row(
@@ -250,21 +264,14 @@ Widget buildBookingEndStrip() {
         Flexible(flex: 2, child: buildMarkerIcon()),
         Flexible(
           flex: 8,
-          fit: FlexFit.loose,
-          child: Container(
-            margin: EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              //boxShadow: [raisedBoxShadow],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: ListTile(
-              title: Padding(
-                padding: EdgeInsets.only(bottom: 6),
-                child: Text('Booking Date & Time'),
-              ),
-              subtitle: Text('January 11, 03:30 PM'),
-            ),
+          fit: FlexFit.tight,
+          child: RoundedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, FeedbacksScreen.id);
+            },
+            title: 'Feedbacks',
+            textColor: Colors.white,
+            buttonColor: Colors.purple,
           ),
         ),
       ],
@@ -272,7 +279,7 @@ Widget buildBookingEndStrip() {
   );
 }
 
-Widget buildBookingDetail() {
+Widget buildBookingDetail(int rId) {
   return Padding(
     padding: EdgeInsets.fromLTRB(
       16,
@@ -290,7 +297,7 @@ Widget buildBookingDetail() {
             flex: 2,
           ),
           Flexible(
-            child: buildRightFlex(),
+            child: buildRightFlex(rId),
             flex: 8,
           ),
         ],
@@ -299,7 +306,7 @@ Widget buildBookingDetail() {
   );
 }
 
-Widget buildRightFlex() {
+Widget buildRightFlex(int rId) {
   return Container(
     padding: EdgeInsets.all(12),
     margin: EdgeInsets.only(bottom: 24),
@@ -315,34 +322,38 @@ Widget buildRightFlex() {
         buildTablePicture(),
         Flexible(
           fit: FlexFit.tight,
-          child: buildTableDescriptions(),
+          child: buildTableDescriptions(rId),
         )
       ],
     ),
   );
 }
 
-Widget buildTableDescriptions() {
-  return Column(
-    mainAxisAlignment: MainAxisAlignment.start,
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: <Widget>[
-      Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        decoration: BoxDecoration(
-          //color: mainColor,
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: Text('Family'),
-      ),
-      SizedBox(height: 2),
-      Text('Shangri-La'),
-      SizedBox(height: 2),
-      Text('Chinese'),
-      SizedBox(height: 2),
-      Text('4 Members'),
-      SizedBox(height: 2),
-      /*   RatingBar(
+Widget buildTableDescriptions(int rId) {
+  RestaurentServices _restService = RestaurentServices();
+
+  return FutureBuilder(
+    future: _restService.getRestaurentById(rId),
+    builder: (BuildContext context, AsyncSnapshot snapshot) {
+      if (snapshot.hasError) {}
+      if (snapshot.hasData) {
+        Restaurent rest = snapshot.data;
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Text("${rest.rName}",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 5),
+            Text("R.no: ${rest.registeredNumber}"),
+            SizedBox(height: 10),
+            Text(rest.address),
+            SizedBox(height: 2),
+            Text(rest.email),
+            SizedBox(height: 2),
+            Text("${rest.contact}"),
+            SizedBox(height: 2),
+            /*   RatingBar(
           onRatingUpdate: null,
           itemSize: 20,
           initialRating: 5,
@@ -354,9 +365,13 @@ Widget buildTableDescriptions() {
           itemBuilder: (context, _) =>
               Icon(Icons.star, color: Colors.orange[900]),
         ),*/
-      SizedBox(height: 2),
-      Text('1256 users review'),
-    ],
+            SizedBox(height: 2),
+            Text('1256 users review'),
+          ],
+        );
+      }
+      return Center(child: CircularProgressIndicator());
+    },
   );
 }
 

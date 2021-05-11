@@ -22,7 +22,6 @@ class UserServices {
   }
 
   Future<User> loginWithEmailAndPw(String email, String password) async {
-    print("$email  $password");
     if (email.isNotEmpty && email != null) {
       if (password.isNotEmpty && password != null) {
         List<User> userList = await getAllUsers();

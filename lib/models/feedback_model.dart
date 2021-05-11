@@ -18,10 +18,10 @@ class Feedback {
   String description;
 
   factory Feedback.fromJson(Map<String, dynamic> json) => Feedback(
-        id: json["id"],
-        cid: json["cid"],
-        rid: json["rid"],
-        description: json["description"],
+        id: json["Id"],
+        cid: json["CID"],
+        rid: json["RID"],
+        description: json["Description"],
       );
 
   Map<String, dynamic> toJson() => {
