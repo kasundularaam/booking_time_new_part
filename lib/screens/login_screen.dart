@@ -8,6 +8,7 @@ import 'package:booking_time/screens/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:booking_time/components/rounded_buttons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String id = 'login_screen';
@@ -27,7 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
       User currentUser =
           await _userServices.loginWithEmailAndPw(_email, _password);
       if (currentUser != null) {
-        print(currentUser.nic);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setInt("uId", currentUser.id);
         CustomLoading.closeLoading(context: context);
         Navigator.pushNamed(context, HomeScreen.id);
       } else {
@@ -37,8 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
             title: "Error",
             message: "wrong email or password",
             action: "Ok");
-        print("user is null");
-        print("somthing went wrong!!!");
       }
     } catch (e) {
       CustomLoading.closeLoading(context: context);

@@ -1,5 +1,7 @@
+import 'package:booking_time/api/menue_services.dart';
 import 'package:booking_time/api/restaurent_service.dart';
 import 'package:booking_time/components/rounded_buttons.dart';
+import 'package:booking_time/models/menue_mdel.dart';
 import 'package:booking_time/models/restaurent_model.dart';
 import 'package:booking_time/screens/feedbacks_screen.dart';
 import 'package:booking_time/screens/reservation_screen.dart';
@@ -14,6 +16,7 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
+  MenueService _menueService = MenueService();
   int _rId;
   void getArguments(BuildContext context) {
     final arguments = ModalRoute.of(context).settings.arguments as Map;
@@ -25,14 +28,6 @@ class _BookingScreenState extends State<BookingScreen> {
     getArguments(context);
 
     ///  var onPressed2 = null;
-    const rowSpacer = TableRow(children: [
-      SizedBox(
-        height: 8,
-      ),
-      SizedBox(
-        height: 8,
-      )
-    ]);
     return Scaffold(
       backgroundColor: Colors.purple[50],
       body: SingleChildScrollView(
@@ -87,135 +82,34 @@ class _BookingScreenState extends State<BookingScreen> {
                             ),
                           ),
                         ),
-                        Table(
-                          children: [
-                            TableRow(
-                              children: [
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Foods",
-                                      style: TextStyle(
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
+                        FutureBuilder(
+                          future: _menueService.getMenuesByRid(_rId),
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text(
+                                  snapshot.error.toString(),
                                 ),
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Price",
-                                      style: TextStyle(
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            rowSpacer,
-                            TableRow(
-                              children: [
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Burger",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Rs 450.00",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            rowSpacer,
-                            TableRow(
-                              children: [
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Fries & Rings",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Rs 650.00",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            rowSpacer,
-                            TableRow(
-                              children: [
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Toppings",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Rs 550.00",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            rowSpacer,
-                            TableRow(
-                              children: [
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Beer",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Rs 1500.00",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
+                              );
+                            }
+                            if (snapshot.hasData) {
+                              List<Menue> menueList = snapshot.data;
+
+                              if (menueList.isNotEmpty) {
+                                return Table(
+                                  children: buildMenueTableRows(menueList),
+                                );
+                              } else {
+                                return Center(
+                                  child: Text(
+                                    "no menues available",
+                                  ),
+                                );
+                              }
+                            }
+                            return Center(child: CircularProgressIndicator());
+                          },
                         ),
                       ],
                     ),
@@ -223,7 +117,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
               ),
             ),
-            buildBookingButton(context),
+            buildBookingButton(context, _rId),
           ],
         ),
       ),
@@ -232,13 +126,14 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 }
 
-Widget buildBookingButton(BuildContext context) {
+Widget buildBookingButton(BuildContext context, int restId) {
   return Container(
     padding: EdgeInsets.symmetric(vertical: 8, horizontal: 44),
     width: double.infinity,
     child: RaisedButton(
       onPressed: () {
-        Navigator.pushNamed(context, ReservationScreen.id);
+        Navigator.pushNamed(context, ReservationScreen.id,
+            arguments: {"rId": restId});
         //TODO
       },
       color: Colors.orange[900],
@@ -263,17 +158,22 @@ Widget buildBookingEndStrip(BuildContext context) {
       children: <Widget>[
         Flexible(flex: 2, child: buildMarkerIcon()),
         Flexible(
-          flex: 8,
-          fit: FlexFit.tight,
-          child: RoundedButton(
-            onPressed: () {
-              Navigator.pushNamed(context, FeedbacksScreen.id);
-            },
-            title: 'Feedbacks',
-            textColor: Colors.white,
-            buttonColor: Colors.purple,
-          ),
-        ),
+            flex: 8,
+            fit: FlexFit.tight,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                color: Colors.purple,
+              ),
+              child: Center(
+                child: Text("Feedbacks",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                    )),
+              ),
+            )),
       ],
     ),
   );
@@ -416,6 +316,84 @@ Widget buildLeftFlex() {
           color: Colors.blueGrey,
           thickness: 1.5,
         ),
+      ),
+    ],
+  );
+}
+
+List<TableRow> buildMenueTableRows(List<Menue> menueList) {
+  List<TableRow> tableRowList = [buildTableHead(), rowSpacer()];
+
+  menueList.forEach((menue) {
+    tableRowList.add(buildTableRow(menue.name, menue.price));
+    tableRowList.add(rowSpacer());
+  });
+
+  return tableRowList;
+}
+
+TableRow rowSpacer() {
+  return TableRow(children: [
+    SizedBox(
+      height: 8,
+    ),
+    SizedBox(
+      height: 8,
+    )
+  ]);
+}
+
+TableRow buildTableHead() {
+  return TableRow(
+    children: [
+      Column(
+        children: [
+          Text(
+            "Foods",
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+      Column(
+        children: [
+          Text(
+            "Price",
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+TableRow buildTableRow(String food, int price) {
+  return TableRow(
+    children: [
+      Column(
+        children: [
+          Text(
+            food,
+            style: TextStyle(
+              fontSize: 15.0,
+            ),
+          ),
+        ],
+      ),
+      Column(
+        children: [
+          Text(
+            "Rs.$price.00",
+            style: TextStyle(
+              fontSize: 15.0,
+            ),
+          ),
+        ],
       ),
     ],
   );

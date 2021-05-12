@@ -5,8 +5,11 @@ import 'package:intl/intl.dart';
 
 class RoundedDateField extends StatelessWidget {
   // const RoundedDateField({Key key}) : super(key: key);
-  final format = DateFormat("yyyy-MM-dd");
 
+  final Function(DateTime) onChanged;
+  RoundedDateField({Key key, this.onChanged}) : super(key: key);
+
+  final format = DateFormat("yyyy-MM-dd");
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -15,6 +18,7 @@ class RoundedDateField extends StatelessWidget {
             decoration: kTextFieldDecoration.copyWith(
                 labelText: "Date (${format.pattern})"),
             format: format,
+            onChanged: onChanged,
             onShowPicker: (context, currentValue) {
               return showDatePicker(
                 context: context,
@@ -29,8 +33,11 @@ class RoundedDateField extends StatelessWidget {
 }
 
 class RoundedTimeField extends StatelessWidget {
-  final format = DateFormat("HH:mm");
+  final Function(DateTime) onChanged;
+  RoundedTimeField({Key key, this.onChanged}) : super(key: key);
   // const RoundedTimeField({Key key}) : super(key: key);
+
+  final format = DateFormat("HH:mm");
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +47,7 @@ class RoundedTimeField extends StatelessWidget {
             decoration: kTextFieldDecoration.copyWith(
                 labelText: "Time (${format.pattern})"),
             format: format,
+            onChanged: onChanged,
             onShowPicker: (context, currentValue) async {
               final time = await showTimePicker(
                 context: context,

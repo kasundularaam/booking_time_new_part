@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:booking_time/components/rounded_buttons.dart';
 import 'package:booking_time/components/rounded_textfields.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignupScreen extends StatefulWidget {
   static const String id = 'signup_screen';
@@ -37,14 +38,36 @@ class _SignupScreenState extends State<SignupScreen> {
     return newUser;
   }
 
+  Future<bool> addSharedPrefs() async {
+    try {
+      User addedUser = await _userServices.loginWithEmailAndPw(
+          createUser().email, createUser().password);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setInt("uId", addedUser.id);
+      return true;
+    } catch (e) {
+      throw Exception("$e");
+    }
+  }
+
   Future<void> createNewAccount() async {
     if (_confirmPassword == _password) {
       CustomLoading.showLoadingDialog(context: context, message: "Signing...");
       try {
         bool userAdded = await _userServices.createAcount(createUser());
         if (userAdded) {
-          CustomLoading.closeLoading(context: context);
-          Navigator.pushNamed(context, HomeScreen.id);
+          bool success = await addSharedPrefs();
+          if (success) {
+            CustomLoading.closeLoading(context: context);
+            Navigator.pushNamed(context, HomeScreen.id);
+          } else {
+            CustomLoading.closeLoading(context: context);
+            CustomAlert.alertDialogBuilder(
+                context: context,
+                title: "Error",
+                message: "account created please login to access your account",
+                action: "Ok");
+          }
         } else {
           CustomLoading.closeLoading(context: context);
           CustomAlert.alertDialogBuilder(
@@ -52,8 +75,6 @@ class _SignupScreenState extends State<SignupScreen> {
               title: "Error",
               message: "somthing went wrong",
               action: "Ok");
-          print("user is null");
-          print("somthing went wrong!!!");
         }
       } catch (e) {
         CustomLoading.closeLoading(context: context);
