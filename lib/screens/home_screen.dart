@@ -45,16 +45,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(context, FeedbacksScreen.id);
-                      },
-                      child: Text(
-                        "Booking Time",
-                        style: TextStyle(
-                          fontSize: 37.0,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    child: Text(
+                      "Booking Time",
+                      style: TextStyle(
+                        fontSize: 37.0,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),

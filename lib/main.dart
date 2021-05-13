@@ -7,7 +7,10 @@ import 'package:booking_time/screens/signup_screen.dart';
 import 'package:booking_time/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 
+import 'services/service_locater.dart';
+
 void main() {
+  setupLocator();
   runApp(BookingTime());
 }
 

@@ -45,7 +45,6 @@ class UserServices {
   }
 
   Future<bool> createAcount(User user) async {
-    print(user.contact);
     String url = "http://www.snp-solutions.xyz:3001/user";
 
     final http.Response response = await http.post(Uri.parse(url),
@@ -56,6 +55,21 @@ class UserServices {
       return true;
     } else {
       throw Exception("${response.statusCode}");
+    }
+  }
+
+  Future<User> getUserByUid(int uid) async {
+    List<User> userList = await getAllUsers();
+    User _user;
+    userList.forEach((user) {
+      if (user.id == uid) {
+        _user = user;
+      }
+    });
+    if (_user != null) {
+      return _user;
+    } else {
+      throw Exception("user not found error");
     }
   }
 }

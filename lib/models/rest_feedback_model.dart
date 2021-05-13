@@ -1,11 +1,12 @@
 import 'dart:convert';
 
-Feedback feedbackFromJson(String str) => Feedback.fromJson(json.decode(str));
+RestFeedback restFeedbackFromJson(String str) =>
+    RestFeedback.fromJson(json.decode(str));
 
-String feedbackToJson(Feedback data) => json.encode(data.toJson());
+String restFeedbackToJson(RestFeedback data) => json.encode(data.toJson());
 
-class Feedback {
-  Feedback({
+class RestFeedback {
+  RestFeedback({
     this.id,
     this.cid,
     this.rid,
@@ -17,7 +18,7 @@ class Feedback {
   int rid;
   String description;
 
-  factory Feedback.fromJson(Map<String, dynamic> json) => Feedback(
+  factory RestFeedback.fromJson(Map<String, dynamic> json) => RestFeedback(
         id: json["Id"],
         cid: json["CID"],
         rid: json["RID"],

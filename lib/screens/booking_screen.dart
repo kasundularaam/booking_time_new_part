@@ -1,3 +1,4 @@
+import 'package:booking_time/api/feedback_service.dart';
 import 'package:booking_time/api/menue_services.dart';
 import 'package:booking_time/api/restaurent_service.dart';
 import 'package:booking_time/components/rounded_buttons.dart';
@@ -5,6 +6,8 @@ import 'package:booking_time/models/menue_mdel.dart';
 import 'package:booking_time/models/restaurent_model.dart';
 import 'package:booking_time/screens/feedbacks_screen.dart';
 import 'package:booking_time/screens/reservation_screen.dart';
+import 'package:booking_time/services/contact_services.dart';
+import 'package:booking_time/services/service_locater.dart';
 import 'package:flutter/material.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -47,7 +50,7 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ),
             SizedBox(height: 24),
-            buildHeroContainer(),
+            buildHeroContainer(_rId),
             Padding(
               padding: EdgeInsets.only(left: 16),
               child: Text(
@@ -56,7 +59,7 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ),
             buildBookingDetail(_rId),
-            buildBookingEndStrip(context),
+            buildBookingEndStrip(context, _rId),
             SizedBox(
               height: 10.0,
             ),
@@ -134,7 +137,6 @@ Widget buildBookingButton(BuildContext context, int restId) {
       onPressed: () {
         Navigator.pushNamed(context, ReservationScreen.id,
             arguments: {"rId": restId});
-        //TODO
       },
       color: Colors.orange[900],
       textColor: Colors.white,
@@ -149,7 +151,7 @@ Widget buildBookingButton(BuildContext context, int restId) {
   );
 }
 
-Widget buildBookingEndStrip(BuildContext context) {
+Widget buildBookingEndStrip(BuildContext context, int restId) {
   return Padding(
     padding: EdgeInsets.symmetric(horizontal: 16),
     child: Row(
@@ -160,18 +162,26 @@ Widget buildBookingEndStrip(BuildContext context) {
         Flexible(
             flex: 8,
             fit: FlexFit.tight,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                color: Colors.purple,
-              ),
-              child: Center(
-                child: Text("Feedbacks",
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, FeedbacksScreen.id,
+                    arguments: {"rId": restId});
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: Colors.purple,
+                ),
+                child: Center(
+                  child: Text(
+                    "Feedbacks",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18.0,
-                    )),
+                    ),
+                  ),
+                ),
               ),
             )),
       ],
@@ -207,6 +217,10 @@ Widget buildBookingDetail(int rId) {
 }
 
 Widget buildRightFlex(int rId) {
+  RestaurentServices restService = RestaurentServices();
+  ContactService contactService = locator<ContactService>();
+  FeedbackServices feedbackServices = FeedbackServices();
+
   return Container(
     padding: EdgeInsets.all(12),
     margin: EdgeInsets.only(bottom: 24),
@@ -216,44 +230,70 @@ Widget buildRightFlex(int rId) {
       //boxShadow: [raisedBoxShadow],
       borderRadius: BorderRadius.circular(8),
     ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>[
-        buildTablePicture(),
-        Flexible(
-          fit: FlexFit.tight,
-          child: buildTableDescriptions(rId),
-        )
-      ],
-    ),
-  );
-}
-
-Widget buildTableDescriptions(int rId) {
-  RestaurentServices _restService = RestaurentServices();
-
-  return FutureBuilder(
-    future: _restService.getRestaurentById(rId),
-    builder: (BuildContext context, AsyncSnapshot snapshot) {
-      if (snapshot.hasError) {}
-      if (snapshot.hasData) {
-        Restaurent rest = snapshot.data;
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Text("${rest.rName}",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 5),
-            Text("R.no: ${rest.registeredNumber}"),
-            SizedBox(height: 10),
-            Text(rest.address),
-            SizedBox(height: 2),
-            Text(rest.email),
-            SizedBox(height: 2),
-            Text("${rest.contact}"),
-            SizedBox(height: 2),
-            /*   RatingBar(
+    child: FutureBuilder(
+      future: restService.getRestaurentById(rId),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              snapshot.error.toString(),
+              style: TextStyle(color: Colors.grey),
+            ),
+          );
+        }
+        if (snapshot.hasData) {
+          Restaurent rest = snapshot.data;
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              Text("${rest.rName}",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              Text(
+                rest.address,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Text("R.no: ${rest.registeredNumber}"),
+              SizedBox(height: 5),
+              GestureDetector(
+                onTap: () {
+                  contactService.sendEmail(rest.email);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Text(
+                    rest.email,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 5),
+              GestureDetector(
+                onTap: () {
+                  contactService.call("${rest.contact}");
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Text(
+                    "${rest.contact}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 5),
+              /*   RatingBar(
           onRatingUpdate: null,
           itemSize: 20,
           initialRating: 5,
@@ -265,43 +305,62 @@ Widget buildTableDescriptions(int rId) {
           itemBuilder: (context, _) =>
               Icon(Icons.star, color: Colors.orange[900]),
         ),*/
-            SizedBox(height: 2),
-            Text('1256 users review'),
-          ],
-        );
-      }
-      return Center(child: CircularProgressIndicator());
-    },
+              FutureBuilder(
+                future: feedbackServices.getFeedbackCountForRest(rId),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasError) {
+                    return Text(
+                      "error..",
+                      style: TextStyle(color: Colors.grey),
+                    );
+                  }
+                  if (snapshot.hasData) {
+                    return Text(
+                      "${snapshot.data} feedbacks",
+                    );
+                  }
+                  return Text(
+                    "Loading...",
+                    style: TextStyle(color: Colors.grey),
+                  );
+                },
+              ),
+            ],
+          );
+        }
+        return Center(child: CircularProgressIndicator());
+      },
+    ),
   );
 }
 
-Widget buildTablePicture() {
-  return Stack(
-    alignment: Alignment.center,
-    fit: StackFit.loose,
-    children: <Widget>[
-      Container(width: 120),
-      Image.asset('assets/table.png', width: 100, fit: BoxFit.fitWidth),
-      Positioned(
-        left: 0,
-        bottom: 0,
-        child: Container(
-          height: 36,
-          width: 36,
-          padding: EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            //  color: mainColor,
-            shape: BoxShape.circle,
-            //   boxShadow: [raisedBoxShadow],
-          ),
-          child: Center(
-            child: Icon(Icons.done_all, color: Colors.white, size: 24),
-          ),
-        ),
-      )
-    ],
-  );
-}
+// Widget buildTablePicture() {
+//   return Stack(
+//     alignment: Alignment.center,
+//     fit: StackFit.loose,
+//     children: <Widget>[
+//       Container(width: 120),
+//       Image.asset('assets/table.png', width: 100, fit: BoxFit.fitWidth),
+//       Positioned(
+//         left: 0,
+//         bottom: 0,
+//         child: Container(
+//           height: 36,
+//           width: 36,
+//           padding: EdgeInsets.all(4),
+//           decoration: BoxDecoration(
+//             //  color: mainColor,
+//             shape: BoxShape.circle,
+//             //   boxShadow: [raisedBoxShadow],
+//           ),
+//           child: Center(
+//             child: Icon(Icons.done_all, color: Colors.white, size: 24),
+//           ),
+//         ),
+//       )
+//     ],
+//   );
+// }
 
 Widget buildLeftFlex() {
   return Column(
@@ -413,7 +472,8 @@ Widget buildMarkerIcon() {
   );
 }
 
-Widget buildHeroContainer() {
+Widget buildHeroContainer(int rId) {
+  RestaurentServices services = RestaurentServices();
   return Container(
     margin: EdgeInsets.all(16),
     // decoration: BoxDecoration(boxShadow: [raisedBoxShadow]),
@@ -424,8 +484,8 @@ Widget buildHeroContainer() {
       children: <Widget>[
         ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              'images/hotel.jpg',
+            child: Image.network(
+              'https://images.unsplash.com/photo-1552566626-52f8b828add9?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=750&q=80%20750w',
               fit: BoxFit.cover,
             )),
         Positioned(
@@ -439,20 +499,41 @@ Widget buildHeroContainer() {
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             margin: EdgeInsets.all(8),
             child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Text('From \$ 56.00'),
-                  SizedBox(width: 24),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(26),
-                      //  color: mainColor,
-                    ),
-                    child: Center(child: Text('Shangri-La')),
-                  ),
-                ],
+              child: FutureBuilder(
+                future: services.getRestaurentById(rId),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        snapshot.error.toString(),
+                      ),
+                    );
+                  }
+                  if (snapshot.hasData) {
+                    Restaurent rest = snapshot.data;
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Text('From \$ 56.00'),
+                        SizedBox(width: 24),
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(26),
+                            //  color: mainColor,
+                          ),
+                          child: Center(
+                            child: Text(rest.rName),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  return Center(
+                    child: Text("Loading..."),
+                  );
+                },
               ),
             ),
           ),
