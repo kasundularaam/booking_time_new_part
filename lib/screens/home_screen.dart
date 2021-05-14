@@ -1,7 +1,6 @@
 import 'package:booking_time/api/restaurent_service.dart';
 import 'package:booking_time/components/rounded_restaurant.dart';
 import 'package:booking_time/models/restaurent_model.dart';
-import 'package:booking_time/screens/feedbacks_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:booking_time/components/rounded_containers.dart';
 // import 'package:search_widget/search_widget.dart';
@@ -24,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return filteredList;
     } else {
       List<Restaurent> restaurentList =
-          await _restaurentServices.getAllRestaurents();
+          await _restaurentServices.getRestaurentsByLoc();
       return restaurentList;
     }
   }
