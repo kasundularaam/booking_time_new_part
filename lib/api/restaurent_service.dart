@@ -72,8 +72,7 @@ class RestaurentServices {
     LocationData position = await getLoc();
     double lat = position.latitude;
     double long = position.longitude;
-    print("$lat");
-    print("$long");
+    print("hey hey we are here $lat $long :)");
     String url =
         "http://www.snp-solutions.xyz:3001/restaurent?lat=$lat&&long=$long";
     final response = await http.get(Uri.parse(url));
