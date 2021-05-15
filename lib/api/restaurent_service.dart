@@ -7,7 +7,6 @@ import 'package:location/location.dart';
 
 class RestaurentServices {
   Location _location = Location();
-  LocationData _currentPosition;
   List<Restaurent> parseRestaurent(String responseBody) {
     final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
     return parsed.map<Restaurent>((json) => Restaurent.fromJson(json)).toList();
@@ -23,44 +22,65 @@ class RestaurentServices {
     }
   }
 
-  getLoc() async {
+  Future<bool> enableServicesAndPermission() async {
     bool _serviceEnabled;
+    bool _locEnabled;
+    bool _permissionEnabled;
     PermissionStatus _permissionGranted;
 
     _serviceEnabled = await _location.serviceEnabled();
     if (!_serviceEnabled) {
       _serviceEnabled = await _location.requestService();
       if (!_serviceEnabled) {
-        return;
+        throw Exception("Location service is not enabled");
+      } else {
+        _locEnabled = true;
       }
+    } else {
+      _locEnabled = true;
     }
 
     _permissionGranted = await _location.hasPermission();
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await _location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
-        return;
+        throw Exception("No permission granted for location service");
+      } else {
+        _permissionEnabled = true;
       }
+    } else {
+      _permissionEnabled = true;
     }
+    if (_locEnabled && _permissionEnabled) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
+  Future<LocationData> getLoc() async {
+    LocationData _currentPosition;
     _currentPosition = await _location.getLocation();
+    if (_currentPosition != null) {
+      return _currentPosition;
+    } else {
+      throw Exception("No permission granted for location service");
+    }
   }
 
   Future<List<Restaurent>> getRestaurentsByLoc() async {
-    await getLoc();
-    if (_currentPosition != null) {
-      double lat = _currentPosition.latitude;
-      double long = _currentPosition.longitude;
-      String url =
-          "http://www.snp-solutions.xyz:3001/restaurent?lat=$lat&&long=$long";
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        return parseRestaurent(response.body);
-      } else {
-        throw Exception('${response.statusCode}');
-      }
+    LocationData position = await getLoc();
+    double lat = position.latitude;
+    double long = position.longitude;
+    print("$lat");
+    print("$long");
+    String url =
+        "http://www.snp-solutions.xyz:3001/restaurent?lat=$lat&&long=$long";
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return parseRestaurent(response.body);
     } else {
-      throw Exception('error occurred while getting current location');
+      throw Exception('${response.statusCode}');
     }
   }
 
