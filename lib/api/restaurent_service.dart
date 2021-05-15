@@ -75,6 +75,7 @@ class RestaurentServices {
     print("hey hey we are here $lat $long :)");
     String url =
         "http://www.snp-solutions.xyz:3001/restaurent?lat=$lat&&long=$long";
+    print(url);
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       return parseRestaurent(response.body);
